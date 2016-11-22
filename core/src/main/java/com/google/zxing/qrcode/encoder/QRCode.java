@@ -33,6 +33,8 @@ public final class QRCode {
   private Version version;
   private int maskPattern;
   private ByteMatrix matrix;
+  private int spaceUsed;
+  private int spaceLeft;
 
   public QRCode() {
     maskPattern = -1;
@@ -56,6 +58,14 @@ public final class QRCode {
 
   public ByteMatrix getMatrix() {
     return matrix;
+  }
+  
+  public int getSpaceUsed() {
+      return spaceUsed;
+  }
+  
+  public int getSpaceLeft() {
+      return spaceLeft;
   }
 
   @Override
@@ -98,6 +108,14 @@ public final class QRCode {
 
   public void setMatrix(ByteMatrix value) {
     matrix = value;
+  }
+  
+  public void setSpaceUsed(int value) {
+      spaceUsed = value;
+  }
+  
+   public void setSpaceLeft(int value) {
+      spaceLeft = value;
   }
 
   // Check if "mask_pattern" is valid.

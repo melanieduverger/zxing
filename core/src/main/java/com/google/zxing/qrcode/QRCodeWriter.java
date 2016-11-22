@@ -111,6 +111,9 @@ public final class QRCodeWriter implements Writer {
         }
       }
     }
+    
+    output.setSpaceLeft(code.getSpaceLeft());
+    output.setSpaceUsed(code.getSpaceUsed());
 
     return output;
   }

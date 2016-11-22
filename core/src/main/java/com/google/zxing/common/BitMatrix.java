@@ -39,6 +39,9 @@ public final class BitMatrix implements Cloneable {
   private final int height;
   private final int rowSize;
   private final int[] bits;
+  
+  private int spaceUsed;
+  private int spaceLeft;
 
   // A helper to construct a square matrix.
   public BitMatrix(int dimension) {
@@ -446,5 +449,22 @@ public final class BitMatrix implements Cloneable {
   public BitMatrix clone() {
     return new BitMatrix(width, height, rowSize, bits.clone());
   }
+  
+   public int getSpaceUsed() {
+      return spaceUsed;
+  }
+  
+  public int getSpaceLeft() {
+      return spaceLeft;
+  }
+  
+    public void setSpaceUsed(int value) {
+      spaceUsed = value;
+  }
+  
+   public void setSpaceLeft(int value) {
+      spaceLeft = value;
+  }
+
 
 }

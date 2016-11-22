@@ -108,6 +108,8 @@ public final class Encoder {
     appendBytes(content, mode, dataBits, encoding);
 
     Version version;
+    int spaceUsed = 0;
+    int spaceLeft = 0;
     if (hints != null && hints.containsKey(EncodeHintType.QR_VERSION)) {
       int versionNumber = Integer.parseInt(hints.get(EncodeHintType.QR_VERSION).toString());
       version = Version.getVersionForNumber(versionNumber);
@@ -115,8 +117,23 @@ public final class Encoder {
       if (!willFit(bitsNeeded, version, ecLevel)) {
         throw new WriterException("Data too big for requested version");
       }
+      spaceUsed = (bitsNeeded + 7) / 8;
+      spaceLeft = spaceLeft(bitsNeeded, version, ecLevel);
     } else {
       version = recommendVersion(ecLevel, mode, headerBits, dataBits);
+      int bitsNeeded = calculateBitsNeeded(mode, headerBits, dataBits, version);
+      spaceUsed = (bitsNeeded + 7) / 8;
+      spaceLeft = spaceLeft(bitsNeeded, version, ecLevel);
+    }
+    
+    if (mode == Mode.ALPHANUMERIC) {
+        int bits = spaceLeft * 8;
+        int reste = bits % 11;
+        spaceLeft = reste >= 6 ? bits / 11 * 2 + 1 : bits / 11 * 2;
+    } else if (mode == Mode.NUMERIC) {
+        int bits = spaceLeft * 8;
+        int reste = bits % 7;
+        spaceLeft = reste >= 4 ? bits / 7 * 2 + 1 : bits / 7 * 2;
     }
 
     BitArray headerAndDataBits = new BitArray();
@@ -144,6 +161,8 @@ public final class Encoder {
     qrCode.setECLevel(ecLevel);
     qrCode.setMode(mode);
     qrCode.setVersion(version);
+    qrCode.setSpaceUsed(spaceUsed);
+    qrCode.setSpaceLeft(spaceLeft);
 
     //  Choose the mask pattern and set to "qrCode".
     int dimension = version.getDimensionForVersion();
@@ -294,6 +313,19 @@ public final class Encoder {
       int numDataBytes = numBytes - numEcBytes;
       int totalInputBytes = (numInputBits + 7) / 8;
       return numDataBytes >= totalInputBytes;
+  }
+  
+  private static int spaceLeft(int numInputBits, Version version, ErrorCorrectionLevel ecLevel) {
+      // In the following comments, we use numbers of Version 7-H.
+      // numBytes = 196
+      int numBytes = version.getTotalCodewords();
+      // getNumECBytes = 130
+      Version.ECBlocks ecBlocks = version.getECBlocksForLevel(ecLevel);
+      int numEcBytes = ecBlocks.getTotalECCodewords();
+      // getNumDataBytes = 196 - 130 = 66
+      int numDataBytes = numBytes - numEcBytes;
+      int totalInputBytes = (numInputBits + 7) / 8;
+      return  numDataBytes - totalInputBytes;
   }
 
   /**
