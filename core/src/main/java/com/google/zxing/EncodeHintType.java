@@ -43,6 +43,11 @@ public enum EncodeHintType {
    * Specifies the matrix shape for Data Matrix (type {@link com.google.zxing.datamatrix.encoder.SymbolShapeHint})
    */
   DATA_MATRIX_SHAPE,
+  /**
+   * Specifies that the DataMatrix is encoded using BASE256 encoding only, to fit with GS1 Guideline
+   */
+  DATA_MATRIX_FORCE_BASE256,
+
 
   /**
    * Specifies a minimum barcode size (type {@link Dimension}). Only applicable to Data Matrix now.

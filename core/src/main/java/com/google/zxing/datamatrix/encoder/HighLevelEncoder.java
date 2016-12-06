@@ -139,9 +139,9 @@ public final class HighLevelEncoder {
    * @return the encoded message (the char values range from 0 to 255)
    */
   public static String encodeHighLevel(String msg) {
-    return encodeHighLevel(msg, SymbolShapeHint.FORCE_NONE, null, null);
+    return encodeHighLevel(msg, SymbolShapeHint.FORCE_NONE, null, null, false);
   }
-
+  
   /**
    * Performs message encoding of a DataMatrix message using the algorithm described in annex P
    * of ISO/IEC 16022:2000(E).
@@ -157,6 +157,26 @@ public final class HighLevelEncoder {
                                        SymbolShapeHint shape, 
                                        Dimension minSize, 
                                        Dimension maxSize) {
+      return encodeHighLevel(msg, shape, minSize, maxSize, false);
+  }
+
+  /**
+   * Performs message encoding of a DataMatrix message using the algorithm described in annex P
+   * of ISO/IEC 16022:2000(E).
+   *
+   * @param msg     the message
+   * @param shape   requested shape. May be {@code SymbolShapeHint.FORCE_NONE},
+   *                {@code SymbolShapeHint.FORCE_SQUARE} or {@code SymbolShapeHint.FORCE_RECTANGLE}.
+   * @param minSize the minimum symbol size constraint or null for no constraint
+   * @param maxSize the maximum symbol size constraint or null for no constraint
+   * @param forceBASE256 force to use BASE256 encoding
+   * @return the encoded message (the char values range from 0 to 255)
+   */
+  public static String encodeHighLevel(String msg,
+                                       SymbolShapeHint shape, 
+                                       Dimension minSize, 
+                                       Dimension maxSize,
+                                       boolean forceBASE256) {
     //the codewords 0..255 are encoded as Unicode characters
     Encoder[] encoders = {
         new ASCIIEncoder(), new C40Encoder(), new TextEncoder(), 
@@ -178,13 +198,23 @@ public final class HighLevelEncoder {
     }
 
     int encodingMode = ASCII_ENCODATION; //Default mode
-    while (context.hasMoreCharacters()) {
-      encoders[encodingMode].encode(context);
-      if (context.getNewEncoding() >= 0) {
-        encodingMode = context.getNewEncoding();
-        context.resetEncoderSignal();
-      }
+    if (forceBASE256) {
+        encodingMode = BASE256_ENCODATION;
+        Base256Encoder base256encoder = (Base256Encoder) encoders[5];
+        context.writeCodeword(HighLevelEncoder.LATCH_TO_BASE256);
+        while (context.hasMoreCharacters()) {
+            base256encoder.encodeOnlyBase256(context);
+        }
+    } else {
+        while (context.hasMoreCharacters()) {
+          encoders[encodingMode].encode(context);
+          if (context.getNewEncoding() >= 0) {
+            encodingMode = context.getNewEncoding();
+            context.resetEncoderSignal();
+          }
+        }
     }
+    
     int len = context.getCodewordCount();
     context.updateSymbolInfo();
     int capacity = context.getSymbolInfo().getDataCapacity();

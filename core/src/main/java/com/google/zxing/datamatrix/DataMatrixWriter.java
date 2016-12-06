@@ -62,11 +62,18 @@ public final class DataMatrixWriter implements Writer {
     SymbolShapeHint shape = SymbolShapeHint.FORCE_NONE;
     Dimension minSize = null;
     Dimension maxSize = null;
+    Boolean forceBase256 = false;
     if (hints != null) {
       SymbolShapeHint requestedShape = (SymbolShapeHint) hints.get(EncodeHintType.DATA_MATRIX_SHAPE);
       if (requestedShape != null) {
         shape = requestedShape;
       }
+      Boolean requestedForceBase256 = (Boolean) hints.get(EncodeHintType.DATA_MATRIX_FORCE_BASE256);
+      if (requestedForceBase256 != null) {
+          forceBase256 = requestedForceBase256;
+      }
+      
+      
       @SuppressWarnings("deprecation")
       Dimension requestedMinSize = (Dimension) hints.get(EncodeHintType.MIN_SIZE);
       if (requestedMinSize != null) {
@@ -81,7 +88,7 @@ public final class DataMatrixWriter implements Writer {
 
 
     //1. step: Data encodation
-    String encoded = HighLevelEncoder.encodeHighLevel(contents, shape, minSize, maxSize);
+    String encoded = HighLevelEncoder.encodeHighLevel(contents, shape, minSize, maxSize, forceBase256);
 
     SymbolInfo symbolInfo = SymbolInfo.lookup(encoded.length(), shape, minSize, maxSize, true);
 
